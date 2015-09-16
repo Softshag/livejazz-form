@@ -1,0 +1,157 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="../bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="../node_modules/datepicker/dist/datepicker.css">
+    <link rel="stylesheet" type="text/css" href="../bower_components/select2/dist/css/select2.css">
+    <link rel="stylesheet" type="text/css" href="../bower_components/select2-bootstrap-theme/dist/select2-bootstrap.css">
+    <script src="../bower_components/jquery/dist/jquery.js"></script>
+    <!--<script src="../bower_components/select2/dist/js/select2.js"></script>-->
+    <script src="../node_modules/jform/dist/jform.bundle.js"></script>
+    <script src="../dist/jform.livejazz.bundle.js"></script>
+    <script src="./muspeg.js"></script>
+    <script>
+
+      $(function () {
+
+        var elm = document.getElementById('concert-form');
+
+        var form = livejazz(elm,{editors:{
+          acts: {
+            parser: window.musParser,
+            compile: function (value) {
+              value = value.map(function (mus) {
+                var inst = mus.instruments.length ? ' (' + mus.instruments.join(',') + ')' : ""
+                return mus.name + inst
+              })
+              return value.join(', ');
+            }
+          },
+          genres: {
+            theme: 'bootstrap',
+            data: ['Rock', 'Pop']
+          }
+        }});
+
+        form.on('invalid', function (editor, error) {
+          console.log(editor.name, error)
+        })
+
+        form.render()
+
+        form.val = {
+          title: 'Test title',
+          acts: [{
+            name: "Rasmus Kildevæld",
+            instruments: ["gui",'sang']
+          }]
+        };
+        $('#getvalue').click(function () {
+          var value = form.val
+          console.log(value);
+        })
+      })
+
+    </script>
+
+  </head>
+  <body class="container" style="margin-top:50px;">
+    <button id="getvalue">Get Value</button>
+    <form role="form" id="concert-form">
+      <div class="row">
+        <div class="col-lg-6 col-md-6">
+          <div class="form-group">
+            <label for="title">Titel<span class="text-danger required"> *</span></label>
+            <textarea name="title" placeholder="Koncert title" data-validate="required" data-form-editor="autosize" class="form-control"></textarea>
+          </div>
+          <div style="position:absolute;top:0;right:15px;height:20px;max-width:300px;" class="check"><span style="margin-top:0px;" class="pull-right checkbox concert-active">
+              <label>Aktiv
+                <input type="checkbox" data-default="data-default" name="active" class="checkbox"/>
+              </label></span>
+          </div>
+          <div class="form-group">
+            <div class="row">
+              <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+                <label for="date">Dato og tid<span class="text-danger required"> *</span></label>
+                <input type="text" name="start" form-editor="date-time" data-format="dd/MM/yyyy hh:mm" data-bv-date="true" class="form-control"/>
+              </div>
+              <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                <label for="duration">Varighed<span class="text-danger required"> *</span></label>
+                <input type="number" name="duration" min="1" max="12" data-default="2" class="form-control"/>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="price" class="control-label">Pris</label>
+            <div class="pull-right"><span style="margin-right:5px;">Gratis</span>
+              <input type="checkbox" name="free" class="pull-right"/>
+            </div>
+            <input type="text" name="price" placeholder="Eks 50 kr medl. / 80 kr" class="form-control"/>
+          </div>
+          <div class="form-group">
+            <label for="genres">Genre<span class="text-danger required"> *</span></label>
+            <select multiple name="genres" form-editor="select2" data-validate="required" placeholder="Vælg op til 3" class="form-control"></select>
+          </div>
+          <div class="form-group">
+            <label for="acts">Bands</label>
+            <div class="help-block">
+              <p><i class="fa fa-exclamation-circle"></i><small> Eks. "Musiker Navn", "Musiker Navn (instr)" eller "Musiker Navn (itr,itr...)"</small></p>
+            </div>
+            <textarea name="acts" form-editor="pegjs" class="form-control"></textarea>
+          </div>
+          <div class="form-group">
+            <ul class="nav nav-tabs"><strong style="display:inline-block">Beskrivelse</strong>
+              <li class="pull-right"><a style="padding:2px 10px" data-toggle="tab" href="#description-english"><span style="width:16px;height:11px;display:inline-block;" class="flag flag-gb"></span><span> Engelsk</span></a></li>
+              <li class="active pull-right"><a style="padding:2px 10px;" data-toggle="tab" href="#description-danish"><span style="width:16px;height:11px;display:inline-block;" class="flag flag-dk"></span><span> Dansk</span></a></li>
+            </ul>
+            <div class="tab-content">
+              <div id="description-danish" class="tab-pane active">
+                <textarea name="description" rows="10" placeholder="Dansk beskrivelse" class="form-control"></textarea>
+              </div>
+              <div id="description-english" class="tab-pane">
+                <textarea name="description_english" rows="10" placeholder="Engelsk beskrivelse" class="form-control"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 col-md-6">
+          <!--.form-control-->
+          <div class="form-group">
+            <label for="image" class="control-label">Billede</label>
+            <input name="image" type="file" form-editor="image-crop" class="form-control"/>
+            <div class="help-block">
+              <p><i class="fa fa-fa-exclamation-circle"></i><small>Billedet kan beskæres (ratio 3:2) efter du har tilføjet det (tryk: add). Tryk herefter på billedet og træk i kanten med musen.</small></p>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="festival" class="control-label">Festival</label>
+            <select type="hidden" name="festival" form-editor="multi-select2" class="form-control"></select>
+            <div class="help-block">
+              <p><i class="fa fa-exclamation-circle"></i><small>
+                   Skal kun udfyldes hvis koncerten er en del af en festival. Kræver at dit spillested er godkendt
+                  som en del af festivalen, hvilket den enkelte festival gør fra deres eget login.</small></p>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" name="outdoor"/><b>Udendørs</b>
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="ticket" class="control-label">Billetlink</label>
+            <input type="text" name="ticket" placeholder="http://billeto.dk" data-validate="url" class="form-control"/>
+          </div>
+          <div class="form-group">
+            <label for="media" class="control-label">Videolink</label>
+            <input type="text" name="media" placeholder="http://youtube.com" data-validate="url" class="form-control"/>
+          </div>
+          <div class="form-group">
+            <label for="facebook" class="control-label">Facebook event</label>
+            <input type="text" name="facebook" placeholder="http://facebook.com" data-validate="url" class="form-control"/>
+          </div>
+        </div>
+      </div>
+    </form>
+  </body>
+</html>

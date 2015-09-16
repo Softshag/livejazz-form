@@ -1,0 +1,5 @@
+
+
+jform.editors.extend('imagecrop', {
+
+});
