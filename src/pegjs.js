@@ -8,7 +8,10 @@ jform.editors.extend('pegjs', {
         this.trigger('invalid', err);
       }
     },
-    'change': 'triggerChange'
+    'change': 'triggerChange',
+    'blur': function (e) {
+      
+    }
   },
   tagName: 'textarea',
   initialize (options={}) {
@@ -20,7 +23,7 @@ jform.editors.extend('pegjs', {
     this.parser = options.parser;
   },
   setValue (value) {
-    
+
     if (typeof value !== 'string') {
 
       if (typeof this.options.compile !== 'function') {

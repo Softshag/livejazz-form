@@ -4,7 +4,12 @@
     <link rel="stylesheet" type="text/css" href="../node_modules/datepicker/dist/datepicker.css">
     <link rel="stylesheet" type="text/css" href="../bower_components/select2/dist/css/select2.css">
     <link rel="stylesheet" type="text/css" href="../bower_components/select2-bootstrap-theme/dist/select2-bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="../bower_components/jaffamvc-koa-assets/dist/client.css" />
+
+    <link rel="stylesheet" type="text/css" href="../dist/livejazz.form.css" />
     <script src="../bower_components/jquery/dist/jquery.js"></script>
+    <script src="../bower_components/jaffamvc-koa-assets/dist/client.js"></script>
+    <script src="../bower_components/bootstrap/dist/js/bootstrap.js"></script>
     <!--<script src="../bower_components/select2/dist/js/select2.js"></script>-->
     <script src="../node_modules/jform/dist/jform.bundle.js"></script>
     <script src="../dist/jform.livejazz.bundle.js"></script>
@@ -117,7 +122,7 @@
           <!--.form-control-->
           <div class="form-group">
             <label for="image" class="control-label">Billede</label>
-            <input name="image" type="file" form-editor="image-crop" class="form-control"/>
+            <div name="image" type="file" form-editor="image-crop"></div>
             <div class="help-block">
               <p><i class="fa fa-fa-exclamation-circle"></i><small>Billedet kan beskæres (ratio 3:2) efter du har tilføjet det (tryk: add). Tryk herefter på billedet og træk i kanten med musen.</small></p>
             </div>

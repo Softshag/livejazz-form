@@ -7,7 +7,8 @@ const gulp = require('gulp'),
   babel = require('gulp-babel'),
   rename = require('gulp-rename'),
   concat = require('gulp-concat'),
-  gulpFilter = require('gulp-filter');
+  gulpFilter = require('gulp-filter'),
+  stylus = require('gulp-stylus');
 
 const files = [
   './src/select2.js',
@@ -73,13 +74,19 @@ gulp.task('bundle', function () {
 
 })
 
-gulp.task('default', ['build']);
-
-gulp.task('watch', ['build'], function () {
-  gulp.watch('./src/**/*.js', ['build']);
+gulp.task('styles', function () {
+  gulp.src('./src/style/index.styl')
+  .pipe(stylus())
+  .pipe(rename('livejazz.form.css'))
+  .pipe(gulp.dest('./dist'))
 });
 
+gulp.task('style:bundle', function () {
 
-gulp.task('watch', function () {
-  gulp.watch('./src/**/*js', ['bundle'])
 })
+
+gulp.task('default', ['build', "styles"]);
+
+gulp.task('watch', ['build'], function () {
+  gulp.watch('./src/**/*.{js,styl}', ['bundle', "styles"]);
+});
