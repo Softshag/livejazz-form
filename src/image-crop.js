@@ -43,6 +43,7 @@ jform.editors.extend('image-crop', {
   onBeforeRender () {
     if (this.uploadButton) {
       this.uploadButton.destroy();
+      this.stopListening(this.uploadButton);
     }
 
     if (this.gallery) {
@@ -55,6 +56,10 @@ jform.editors.extend('image-crop', {
   onRender () {
     this.uploadButton = new Assets.UploadButton({
       el: this.ui.uploadButton
+    });
+
+    this.listenTo(this.uploadButton, 'change', function () {
+      console.log('on change')
     });
 
     let fragment = document.createRange().createContextualFragment(galleryModal);

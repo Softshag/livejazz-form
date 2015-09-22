@@ -105,9 +105,9 @@ jform.editors.extend('date-time', {
 }, { defaults: { autoClose: true } });
 'use strict';
 
-var imageTemplate = '<div>\n  <div class="preview"></div>\n  <input type="file" class="upload-btn" />\n  <button class="gallery-btn btn btn-default">Pick</button>\n</div>';
+var imageTemplate = '<div>\n  <div class="preview"></div>\n  <div class="upload-btn-wrap">\n    <span class="btn btn-default btn-sm">Upload</span>\n    <input type="file" class="upload-btn" />\n  </div>\n\n  <button class="gallery-btn btn btn-sm btn-default">Pick</button>\n</div>';
 
-var galleryModal = '<div class="modal fade">\n  <div class="modal-dialog">\n    <div class="modal-content">\n      <div class="modal-header">\n        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>\n        <h4 class="modal-title">Modal title</h4>\n      </div>\n      <div class="modal-body">\n\n      </div>\n      <div class="modal-footer">\n        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>\n        <button type="button" class="btn btn-primary">Save changes</button>\n      </div>\n    </div><!-- /.modal-content -->\n  </div><!-- /.modal-dialog -->\n</div><!-- /.modal -->';
+var galleryModal = '<div class="modal fade">\n  <div class="modal-dialog modal-lg">\n    <div class="modal-content">\n      <div class="modal-header">\n        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>\n        <h4 class="modal-title">Modal title</h4>\n      </div>\n      <div class="modal-body gallery">\n\n      </div>\n      <div class="modal-footer">\n        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>\n        <button type="button" class="btn btn-primary">Save changes</button>\n      </div>\n    </div><!-- /.modal-content -->\n  </div><!-- /.modal-dialog -->\n</div><!-- /.modal -->';
 
 jform.editors.extend('image-crop', {
   template: imageTemplate,
@@ -122,6 +122,7 @@ jform.editors.extend('image-crop', {
   onBeforeRender: function onBeforeRender() {
     if (this.uploadButton) {
       this.uploadButton.destroy();
+      this.stopListening(this.uploadButton);
     }
 
     if (this.gallery) {
@@ -135,19 +136,33 @@ jform.editors.extend('image-crop', {
       el: this.ui.uploadButton
     });
 
+    this.listenTo(this.uploadButton, 'change');
+
     var fragment = document.createRange().createContextualFragment(galleryModal);
     this.el.appendChild(fragment);
 
     var content = this.el.querySelector('.modal-body');
-    console.log(content);
 
-    this.galley = new Assets.GalleryView({
+    this.gallery = new Assets.GalleryView({
       el: content,
       url: 'http://test'
     });
   },
 
-  onGallery: function onGallery() {}
+  onGallery: function onGallery(e) {
+    e.preventDefault();
+    this.gallery.render();
+    $(this.el).find('.modal').modal();
+  },
+
+  onDestroy: function onDestroy() {
+    if (this.gallery) {
+      this.gallery.destroy();
+    }
+    if (this.uploadButton) {
+      this.uploadButton.destroy();
+    }
+  }
 
 });
 'use strict';

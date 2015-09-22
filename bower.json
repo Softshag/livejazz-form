@@ -21,6 +21,7 @@
   "dependencies": {
     "autosize": "~3.0.12",
     "cropper": "~0.11.1",
+    "jaffamvc-koa-assets": "/Users/rasmus/Development/node/jaffamvc-koa-assets#~0.1.0",
     "jquery": "~2.1.4",
     "select2": "~4.0.0",
     "select2-bootstrap-theme": "~0.1.0-beta.4"
