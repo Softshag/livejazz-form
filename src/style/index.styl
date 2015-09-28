@@ -7,7 +7,7 @@ aspect-ratio(width, height)
     width: 100%;
     padding-top: (height / width) * 100%;
   }
-  > .content {
+  > .content, .cropper-container {
     position: absolute;
     top: 0;
     left: 0;
@@ -19,6 +19,9 @@ aspect-ratio(width, height)
 
 
 [form-editor="image-crop"]
-  .preview
+  .crop-preview
+    overflow hidden
     border: 2px dashed #ccc
     aspect-ratio(3,2)
+
+

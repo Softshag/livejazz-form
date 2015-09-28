@@ -1,13 +1,13 @@
 'use strict';
 
 let imageTemplate = `<div>
-  <div class="preview"></div>
+  <div class="crop-preview"></div>
   <div class="upload-btn-wrap">
     <span class="btn btn-default btn-sm">Upload</span>
     <input type="file" class="upload-btn" />
   </div>
-
   <button class="gallery-btn btn btn-sm btn-default">Pick</button>
+  <button class="crop-btn btn btn-sm btn-default pull-right">Crop</button>
 </div>`;
 
 let galleryModal = `<div class="modal fade">
@@ -28,13 +28,16 @@ let galleryModal = `<div class="modal fade">
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->`
 
+
 jform.editors.extend('image-crop', {
   template: imageTemplate,
   ui: {
     uploadButton: '.upload-btn',
+    cropPreview: '.crop-preview'
   },
   events: {
-    'click .gallery-btn' : 'onGallery'
+    'click .gallery-btn' : 'onGallery',
+    'click .crop-btn': 'onCrop'
   },
   initialize () {
 
@@ -53,31 +56,100 @@ jform.editors.extend('image-crop', {
 
   },
 
+
+
   onRender () {
     this.uploadButton = new Assets.UploadButton({
-      el: this.ui.uploadButton
+      el: this.ui.uploadButton,
+      url: '/files',
+      mimeType: 'image/*',
+      autoUpload: true,
     });
 
     this.listenTo(this.uploadButton, 'change', function () {
       console.log('on change')
     });
 
+    this.listenTo(this.uploadButton, 'upload', function (data) {
+      let model = this.gallery.collection.create(data, { add: false })
+      this.onAssetSelected(model);
+    });
+
+    this.uploadButton.render()
+
     let fragment = document.createRange().createContextualFragment(galleryModal);
     this.el.appendChild(fragment);
 
+    this.ui.modal = this.el.querySelector('.modal')
+    console.log(this.ui)
     let content = this.el.querySelector('.modal-body');
 
     this.gallery = new Assets.GalleryView({
       el: content,
-      url: 'http://test'
+      url: '/files'
     });
+
+    this.gallery.render();
+
+
+  },
+
+  onAssetSelected (model) {
+    let img = new Image()
+    this.ui.cropPreview.innerHTML = ""
+    $(img).addClass('content')
+    img.onload =  () => {
+      this.ui.cropPreview.appendChild(img)
+
+    }
+    img.src = model.get('url');
+
+  },
+
+  onCrop (e) {
+    e.preventDefault();
+    let el = this.el.querySelector('.crop-btn');
+
+    let image = this.ui.cropPreview.querySelector('img');
+
+    if (image == null) {
+      return;
+    }
+
+    if ($(el).hasClass('active')) {
+      $(image).cropper('destroy');
+      $(el).removeClass('active');
+      return
+    }
+
+    $(el).addClass('active');
+
+    $(image).cropper({
+        aspectRatio: 3 / 2,
+        autoCropArea: 1,
+        strict: true,
+        guides: false,
+        highlight: false,
+        dragCrop: false,
+        cropBoxMovable: false,
+        cropBoxResizable: false
+      });
 
   },
 
   onGallery (e) {
     e.preventDefault();
-    this.gallery.render();
-    $(this.el).find('.modal').modal();
+
+    this.gallery.selected = null;
+    this.gallery.collection.fetch();
+    let modal = $(this.el).find('.modal')
+    modal.modal();
+    modal.one('hide.bs.modal ', () => {
+      if (this.gallery.selected == null) return;
+
+      this.onAssetSelected.call(this, this.gallery.selected)
+
+    })
   },
 
   onDestroy () {

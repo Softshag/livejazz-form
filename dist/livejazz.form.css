@@ -29,18 +29,21 @@
   font-size: 20px;
   cursor: pointer;
   opacity: 0;
+  width: 100%;
 }
-[form-editor="image-crop"] .preview {
+[form-editor="image-crop"] .crop-preview {
+  overflow: hidden;
   border: 2px dashed #ccc;
   position: relative;
 }
-[form-editor="image-crop"] .preview:before {
+[form-editor="image-crop"] .crop-preview:before {
   display: block;
   content: "";
   width: 100%;
   padding-top: 66.66666666666666%;
 }
-[form-editor="image-crop"] .preview > .content {
+[form-editor="image-crop"] .crop-preview > .content,
+[form-editor="image-crop"] .crop-preview .cropper-container {
   position: absolute;
   top: 0;
   left: 0;

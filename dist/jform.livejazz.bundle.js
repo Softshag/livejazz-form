@@ -3414,17 +3414,19 @@ jform.editors.extend('date-time', {
 }, { defaults: { autoClose: true } });
 'use strict';
 
-var imageTemplate = '<div>\n  <div class="preview"></div>\n  <div class="upload-btn-wrap">\n    <span class="btn btn-default btn-sm">Upload</span>\n    <input type="file" class="upload-btn" />\n  </div>\n\n  <button class="gallery-btn btn btn-sm btn-default">Pick</button>\n</div>';
+var imageTemplate = '<div>\n  <div class="crop-preview"></div>\n  <div class="upload-btn-wrap">\n    <span class="btn btn-default btn-sm">Upload</span>\n    <input type="file" class="upload-btn" />\n  </div>\n  <button class="gallery-btn btn btn-sm btn-default">Pick</button>\n  <button class="crop-btn btn btn-sm btn-default pull-right">Crop</button>\n</div>';
 
 var galleryModal = '<div class="modal fade">\n  <div class="modal-dialog modal-lg">\n    <div class="modal-content">\n      <div class="modal-header">\n        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>\n        <h4 class="modal-title">Modal title</h4>\n      </div>\n      <div class="modal-body gallery">\n\n      </div>\n      <div class="modal-footer">\n        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>\n        <button type="button" class="btn btn-primary">Save changes</button>\n      </div>\n    </div><!-- /.modal-content -->\n  </div><!-- /.modal-dialog -->\n</div><!-- /.modal -->';
 
 jform.editors.extend('image-crop', {
   template: imageTemplate,
   ui: {
-    uploadButton: '.upload-btn'
+    uploadButton: '.upload-btn',
+    cropPreview: '.crop-preview'
   },
   events: {
-    'click .gallery-btn': 'onGallery'
+    'click .gallery-btn': 'onGallery',
+    'click .crop-btn': 'onCrop'
   },
   initialize: function initialize() {},
 
@@ -3442,28 +3444,94 @@ jform.editors.extend('image-crop', {
 
   onRender: function onRender() {
     this.uploadButton = new Assets.UploadButton({
-      el: this.ui.uploadButton
+      el: this.ui.uploadButton,
+      url: '/files',
+      mimeType: 'image/*',
+      autoUpload: true
     });
 
     this.listenTo(this.uploadButton, 'change', function () {
       console.log('on change');
     });
 
+    this.listenTo(this.uploadButton, 'upload', function (data) {
+      var model = this.gallery.collection.create(data, { add: false });
+      this.onAssetSelected(model);
+    });
+
+    this.uploadButton.render();
+
     var fragment = document.createRange().createContextualFragment(galleryModal);
     this.el.appendChild(fragment);
 
+    this.ui.modal = this.el.querySelector('.modal');
+    console.log(this.ui);
     var content = this.el.querySelector('.modal-body');
 
     this.gallery = new Assets.GalleryView({
       el: content,
-      url: 'http://test'
+      url: '/files'
+    });
+
+    this.gallery.render();
+  },
+
+  onAssetSelected: function onAssetSelected(model) {
+    var _this = this;
+
+    var img = new Image();
+    this.ui.cropPreview.innerHTML = "";
+    $(img).addClass('content');
+    img.onload = function () {
+      _this.ui.cropPreview.appendChild(img);
+    };
+    img.src = model.get('url');
+  },
+
+  onCrop: function onCrop(e) {
+    e.preventDefault();
+    var el = this.el.querySelector('.crop-btn');
+
+    var image = this.ui.cropPreview.querySelector('img');
+
+    if (image == null) {
+      return;
+    }
+
+    if ($(el).hasClass('active')) {
+      $(image).cropper('destroy');
+      $(el).removeClass('active');
+      return;
+    }
+
+    $(el).addClass('active');
+
+    $(image).cropper({
+      aspectRatio: 3 / 2,
+      autoCropArea: 1,
+      strict: true,
+      guides: false,
+      highlight: false,
+      dragCrop: false,
+      cropBoxMovable: false,
+      cropBoxResizable: false
     });
   },
 
   onGallery: function onGallery(e) {
+    var _this2 = this;
+
     e.preventDefault();
-    this.gallery.render();
-    $(this.el).find('.modal').modal();
+
+    this.gallery.selected = null;
+    this.gallery.collection.fetch();
+    var modal = $(this.el).find('.modal');
+    modal.modal();
+    modal.one('hide.bs.modal ', function () {
+      if (_this2.gallery.selected == null) return;
+
+      _this2.onAssetSelected.call(_this2, _this2.gallery.selected);
+    });
   },
 
   onDestroy: function onDestroy() {
