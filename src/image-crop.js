@@ -67,12 +67,18 @@ jform.editors.extend('image-crop', {
     });
 
     this.listenTo(this.uploadButton, 'change', function () {
-      console.log('on change')
+      this.clear();
     });
 
     this.listenTo(this.uploadButton, 'upload', function (data) {
-      let model = this.gallery.collection.create(data, { add: false })
+      let model = this.gallery.collection.create(data, { add: false });
       this.onAssetSelected(model);
+      this.triggerChange();
+    });
+
+    this.listenTo(this.uploadButton, 'error', function (error) {
+      let err = new jform.editors.ValidationError(this.name, null, error.message);
+      this.trigger('invalid', err);
     });
 
     this.uploadButton.render()
@@ -81,12 +87,13 @@ jform.editors.extend('image-crop', {
     this.el.appendChild(fragment);
 
     this.ui.modal = this.el.querySelector('.modal')
-    console.log(this.ui)
+
     let content = this.el.querySelector('.modal-body');
 
     this.gallery = new Assets.GalleryView({
       el: content,
-      url: '/files'
+      url: '/files',
+      uploadButton: false
     });
 
     this.gallery.render();
@@ -151,6 +158,11 @@ jform.editors.extend('image-crop', {
 
     })
   },
+
+  clear () {
+    this.ui.cropPreview.innerHTML = '';
+  },
+
 
   onDestroy () {
     if (this.gallery) {

@@ -3,14 +3,14 @@
 jform.editors.extend('pegjs', {
   events: {
     'keyup': function (e) {
-      let err = this.validate();
+      /*let err = this.validate();
       if (err !== null) {
         this.trigger('invalid', err);
-      }
+      }*/
     },
     'change': 'triggerChange',
     'blur': function (e) {
-      
+
     }
   },
   tagName: 'textarea',
@@ -53,7 +53,8 @@ jform.editors.extend('pegjs', {
     try {
       value = this.parser.parse(value);
     } catch (e) {
-      return new jform.editors.ValidationError(this.name,value,e.message);
+      let msg = e.message.substr(0, e.message.length - 1) + " at column " + e.column;
+      return new jform.editors.ValidationError(this.name,value,msg);
     }
 
     this._value = value;

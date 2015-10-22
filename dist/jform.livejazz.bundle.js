@@ -3393,7 +3393,10 @@ jform.editors.extend('date-time', {
     return this.$instance.viewDate;
   },
 
-  clear: function clear() {},
+  clear: function clear() {
+    this.setValue(new Date());
+    this.setDefault();
+  },
 
   onDestroy: function onDestroy() {
     this._destroy();
@@ -3451,12 +3454,18 @@ jform.editors.extend('image-crop', {
     });
 
     this.listenTo(this.uploadButton, 'change', function () {
-      console.log('on change');
+      this.clear();
     });
 
     this.listenTo(this.uploadButton, 'upload', function (data) {
       var model = this.gallery.collection.create(data, { add: false });
       this.onAssetSelected(model);
+      this.triggerChange();
+    });
+
+    this.listenTo(this.uploadButton, 'error', function (error) {
+      var err = new jform.editors.ValidationError(this.name, null, error.message);
+      this.trigger('invalid', err);
     });
 
     this.uploadButton.render();
@@ -3465,12 +3474,13 @@ jform.editors.extend('image-crop', {
     this.el.appendChild(fragment);
 
     this.ui.modal = this.el.querySelector('.modal');
-    console.log(this.ui);
+
     var content = this.el.querySelector('.modal-body');
 
     this.gallery = new Assets.GalleryView({
       el: content,
-      url: '/files'
+      url: '/files',
+      uploadButton: false
     });
 
     this.gallery.render();
@@ -3534,6 +3544,10 @@ jform.editors.extend('image-crop', {
     });
   },
 
+  clear: function clear() {
+    this.ui.cropPreview.innerHTML = '';
+  },
+
   onDestroy: function onDestroy() {
     if (this.gallery) {
       this.gallery.destroy();
@@ -3549,10 +3563,10 @@ jform.editors.extend('image-crop', {
 jform.editors.extend('pegjs', {
   events: {
     'keyup': function keyup(e) {
-      var err = this.validate();
+      /*let err = this.validate();
       if (err !== null) {
         this.trigger('invalid', err);
-      }
+      }*/
     },
     'change': 'triggerChange',
     'blur': function blur(e) {}
@@ -3597,7 +3611,8 @@ jform.editors.extend('pegjs', {
     try {
       value = this.parser.parse(value);
     } catch (e) {
-      return new jform.editors.ValidationError(this.name, value, e.message);
+      var msg = e.message.substr(0, e.message.length - 1) + " at column " + e.column;
+      return new jform.editors.ValidationError(this.name, value, msg);
     }
 
     this._value = value;
@@ -3606,9 +3621,67 @@ jform.editors.extend('pegjs', {
   }
 
 });
+/* global jform:true */
 'use strict';
 
-var Form = jform.create;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Form = (function (_jform$Form) {
+  _inherits(Form, _jform$Form);
+
+  function Form() {
+    _classCallCheck(this, Form);
+
+    _jform$Form.apply(this, arguments);
+  }
+
+  Form.prototype.onChange = function onChange(editor) {
+    this.validateEditor(editor.name).then(function () {
+      var field = editor.el.parentNode;
+      var messageField = field.querySelector('.form-message');
+      if (messageField) {
+        messageField.style.display = 'none';
+      }
+    })['catch'](function () {});
+  };
+
+  Form.prototype.onInvalid = function onInvalid(editor, error) {
+
+    var field = editor.el.parentNode;
+    var messageField = field.querySelector('.form-message');
+
+    if (messageField == null) {
+      messageField = document.createElement('div');
+      messageField.classList.add('form-message');
+      field.appendChild(messageField);
+    }
+    this.__resetMessageField(messageField);
+    var msg = error.message || "";
+    if (error.errors && error.errors.length) {
+      msg = error.errors.map(function (m) {
+        return m.message;
+      }).join('<br/>');
+    }
+
+    $(messageField).html(msg);
+    messageField.style.display = 'block';
+  };
+
+  Form.prototype.__resetMessageField = function __resetMessageField(elm) {
+    $(elm).removeClass('error success').html('');
+  };
+
+  return Form;
+})(jform.Form);
+
+Form.create = function (elm) {
+  var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+  options.el = elm;
+  return new Form(options);
+};
 return Form;
 
 }));

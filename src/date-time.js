@@ -37,7 +37,8 @@ jform.editors.extend('date-time', {
   },
 
   clear () {
-
+    this.setValue(new Date());
+    this.setDefault();
   },
 
   onDestroy () {

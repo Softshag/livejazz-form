@@ -21,8 +21,8 @@
       $(function () {
 
         var elm = document.getElementById('concert-form');
-
-        var form = livejazz(elm,{editors:{
+        console.log(livejazz)
+        var form = livejazz.create(elm,{editors:{
           acts: {
             parser: window.musParser,
             compile: function (value) {
@@ -124,10 +124,10 @@
           <!--.form-control-->
           <div class="form-group">
             <label for="image" class="control-label">Billede</label>
-            <div name="image" type="file" form-editor="image-crop"></div>
             <div class="help-block">
               <p><i class="fa fa-fa-exclamation-circle"></i><small>Billedet kan beskæres (ratio 3:2) efter du har tilføjet det (tryk: add). Tryk herefter på billedet og træk i kanten med musen.</small></p>
             </div>
+            <div name="image" type="file" form-editor="image-crop"></div>
           </div>
           <div class="form-group">
             <label for="festival" class="control-label">Festival</label>
